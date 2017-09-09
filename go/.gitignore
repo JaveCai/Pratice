@@ -1,0 +1,7 @@
+# .gitignore
+# ignore all the files first
+*
+
+# exclude go source code
+!*.go
+!*.gitignore
