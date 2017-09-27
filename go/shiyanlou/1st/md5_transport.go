@@ -1,6 +1,7 @@
 package md5transport
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -23,19 +24,21 @@ func (t *Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 		return t.RoundTripper.RoundTrip(r)
 	}
 	b, err := ioutil.ReadAll(r.Body)
+	//r.Body.Close()
 	//ast.Nil(err)
 	if err != nil {
 		fmt.Println("[RoundTrip] ioutil read fail")
 	} else {
 		if len(b) == 0 {
-			fmt.Println("[RoundTrip] len == 0")
 			md5exp := ""
 			r.Header.Set("X-Md5", md5exp)
 		} else {
-			fmt.Println("[RoundTrip] len != 0")
 			hexB := md5.Sum(b)
 			md5exp := hex.EncodeToString(hexB[:])
 			r.Header.Set("X-Md5", md5exp)
+
+			//bug fixed: 由于 ioutil.ReadAll 方法会读取到 EOF，所以需要重置 Body
+			r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 		}
 
 	}
